@@ -31,13 +31,13 @@ numbers = {
     9: ((0,1), (0,5), (1,2), (2,4), (2,5)),
 }
 
-def newImageOf(number):
-    width, height = 100 + random.randint(-7, 7), 170 + random.randint(-10, 10)
+def newImageOf(number, sizeWH):
+    width, height = sizeWH
 
     def getDot():
         def getDotMatrix():
             size = random.randint(2,3)
-            dot = [[0 for _ in range(size)] for _ in range(size)]
+            dot = np.zeros(shape=(size, size))
             return dot
 
         matrix = getDotMatrix()
