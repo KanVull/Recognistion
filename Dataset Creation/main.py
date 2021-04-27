@@ -6,13 +6,16 @@ from draw_number import newImageOf
 
 input_path = './test_images/'
 output_path = './Dataset/'
-name_of_csv = '__data.csv'
+name_of_csv_numbers = '__data_numbers.csv'
+name_of_csv_marking = '__data_marking.csv'
 res = (9, 16) # разрешение одной цифры
 minSize = (3 * res[0], 3 * res[1])
 maxSize = (9 * res[0], 9 * res[1])
 
-dataset = open(f'{output_path}{name_of_csv}', 'w')
-dataset.write('filename;width;height;class;xmin;ymin;xmax;ymax\n')
+dataset_numbers = open(f'{output_path}{name_of_csv_numbers}', 'w')
+dataset_numbers.write('filename;width;height;class;xmin;ymin;xmax;ymax\n')
+dataset_marking = open(f'{output_path}{name_of_csv_marking}', 'w')
+dataset_marking.write('filename;width;height;class;xmin;ymin;xmax;ymax\n')
 
 os.chdir(input_path)
 for count, image_name in enumerate(os.listdir()):
@@ -20,7 +23,7 @@ for count, image_name in enumerate(os.listdir()):
         print(count)
     image = cv2.imread(image_name, 0)
     
-    ## Удаление изображений если чёрного больше 30%
+    ## Удаление изображений если чёрного больше 20%
     allpixelsCount = image.size
     blackpixelsCount = np.count_nonzero((15 > image))
     if blackpixelsCount / allpixelsCount > 0.2:
@@ -43,7 +46,6 @@ for count, image_name in enumerate(os.listdir()):
     ranGenSize[0] = random.randint(minSize[0], maxSize[0])
     ranGenSize[1] = round(ranGenSize[0] / res[0] * res[1])
 
-
     ## Расчёт позиции метки
     leftUpXpos = random.randrange(shape_area['xmin'], shape_area['xmax'] - countNumbers * ranGenSize[0])
     leftUpYpos = random.randrange(shape_area['ymin'], shape_area['ymax'] - ranGenSize[1])
@@ -56,11 +58,7 @@ for count, image_name in enumerate(os.listdir()):
     #     cv2.rectangle(image, (leftUpXpos + x * i, leftUpYpos), (leftUpXpos + (x + 1) * i, rightDownYpos), (255), 3)
 
     ## Получение чисел метки
-    numbers = random.choices(range(10), k=countNumbers)
-    numbers = [(newImageOf(number, ranGenSize), number) for number in numbers]
-    # for number in numbers:
-    #     cv2.imshow('n', number)
-    #     cv2.waitKey(0)    
+    numbers = [(newImageOf(number, ranGenSize), number) for number in random.choices(range(10), k=countNumbers)]   
 
     position_of_numbers = []
     ## Добавление чисел на картинку
@@ -80,10 +78,12 @@ for count, image_name in enumerate(os.listdir()):
     os.chdir('../' + output_path)
     cv2.imwrite(image_name, image)
     for i, number in enumerate(numbers):
-        dataset.write(f'{image_name};{image.shape[1]};{image.shape[0]};{number[1]};{position_of_numbers[i][0]};{position_of_numbers[i][1]};{position_of_numbers[i][2]};{position_of_numbers[i][3]}\n')
+        dataset_numbers.write(f'{image_name};{image.shape[1]};{image.shape[0]};{number[1]};{position_of_numbers[i][0]};{position_of_numbers[i][1]};{position_of_numbers[i][2]};{position_of_numbers[i][3]}\n')
+    dataset_marking.write(f'{image_name};{image.shape[1]};{image.shape[0]};marking;{leftUpXpos};{leftUpYpos};{rightDownXpos};{rightDownYpos}\n')
 
     # cv2.imshow('img', image) 
     # cv2.waitKey(0)
     os.chdir('../' + input_path)
 
-dataset.close()
+dataset_numbers.close()
+dataset_marking.close()
