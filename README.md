@@ -16,6 +16,10 @@
 
 Папка с кучей картинок с маркировками на металле + два csv файла для tensorlow обучения
 
+#### Dataset Pre-processed Images
+
+Папка с обработанными MyFilters изображениями из Dataset
+
 #### Dataset Creation
 
 Папка с кодом, который сделал папку "Dataset"
