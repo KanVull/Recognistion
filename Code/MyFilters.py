@@ -1,4 +1,4 @@
-import II
+# import II
 from cv2 import cv2
 import numpy as np
 import math
@@ -15,7 +15,7 @@ class MyFilters():
     def __debagShow(self, name, image):
         if self.__debug:
             if image.shape[0] > 540 or image.shape[1] > 960:
-                cv2.imshow(name, cv2.resize(image, (960, 540)))
+                cv2.imshow(name, cv2.resize(image, (1600, 256)))
             else:
                 cv2.imshow(name, image)    
             cv2.waitKey()
@@ -27,7 +27,7 @@ class MyFilters():
     def __eraseBigAreas(self, mask):
         cnts = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-        max_area = 5000
+        max_area = 4000
         for c in cnts:
             area = cv2.contourArea(c)
             if area > max_area:
@@ -59,19 +59,19 @@ class MyFilters():
     def __eraseNoise(self):
         _, mask = cv2.threshold(self.__image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         mask = cv2.medianBlur(mask, 3)
-        mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_DILATE,(7,7)), iterations = 1)
+        mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_DILATE,(3,3)), iterations = 1)
         mask = self.__eraseBigAreas(mask)
         self.__image = self.__masking(self.__image, mask) # Big areas erased
 
         _, mask = cv2.threshold(self.__image, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-        mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_DILATE,(9,9)), iterations = 3)
+        mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_DILATE,(7,7)), iterations = 3)
 
         self.__debagShow('erase noise', mask)
 
-        mask = self.__eraseSmallAreas(mask)
-        self.__image = self.__masking(self.__image, mask)
+        # mask = self.__eraseSmallAreas(mask)
+        # self.__image = self.__masking(self.__image, mask)
 
-        self.__debagShow('erase small areas', self.__image)
+        # self.__debagShow('erase small areas', self.__image)
 
     def __getDistanse(self, point1, point2):
         x1, y1 = point1
@@ -168,24 +168,25 @@ class MyFilters():
 
     def uploadImage(self, path):
         self.__image = None
-        f = open(path, "rb")
-        chunk = f.read()
-        chunk_arr = np.frombuffer(chunk, dtype=np.uint8)
-        self.__image = cv2.imdecode(chunk_arr, 0)
+        self.__image = self.__getimage(path)
 
         return False if self.__image is None else True    
 
+    def runFilters(self):
+        self.__contrast(2)
+        self.__eraseNoise()
+        return self.__image
+
     def showCurrentStateImage(self):
         if self.__image is not None:
-            cv2.imshow('image', cv2.resize(self.__image, (960, 540)))
-            cv2.waitKey()
+            cv2.imshow('image', self.__image)
+            cv2.waitKey(0)
             return True
         else:
-            return False    
-        if self.__image is not None:
-            return self.__recognitionValue()
-        else:
-            return None         
+            return False            
+
+    def saveImage(self, name, image):
+        cv2.imwrite(name, image)
 
     def getValueFromImage(self):
         if self.__image is not None:
